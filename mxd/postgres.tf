@@ -58,6 +58,12 @@ resource "kubernetes_deployment" "postgres" {
             name       = "pg-initdb"
           }
 
+          # Add this block to mount the volume
+          volume_mount {
+            mount_path = local.pg-mount-path
+            name       = "pgdata"
+          }
+
           # Uncomment this to assign (more) resources
           #          resources {
           #            limits = {
@@ -84,6 +90,14 @@ resource "kubernetes_deployment" "postgres" {
             name = kubernetes_config_map.postgres-config.metadata.0.name
           }
         }
+
+        # Add this block to define the volume using the PVC
+        volume {
+          name = "pgdata"
+          persistent_volume_claim {
+            claim_name = kubernetes_persistent_volume_claim.pg-pvc.metadata.0.name
+          }
+        }
       }
     }
   }
@@ -99,6 +113,7 @@ resource "kubernetes_config_map" "postgres-config" {
   data = {
     POSTGRES_USER     = "postgres"
     POSTGRES_PASSWORD = "postgres"
+    PGDATA            = local.pg-mount-path
     "init.sql"        = <<EOT
       CREATE DATABASE ${var.miw-database};
       CREATE USER ${var.miw-db-user} WITH ENCRYPTED PASSWORD '${local.miw-pg-pwd}';
@@ -119,6 +134,7 @@ resource "kubernetes_config_map" "postgres-config" {
     EOT
   }
 }
+
 
 # K8S ClusterIP so Keycloak and MIW can access postgres
 resource "kubernetes_service" "pg-service" {
@@ -151,4 +167,6 @@ locals {
   kc-pg-pwd  = random_password.kc-pg-pwd.result
   pg-ip      = kubernetes_service.pg-service.spec.0.cluster_ip
   pg-host    = "${local.pg-ip}:${var.postgres-port}"
+
+  pg-mount-path="/var/lib/postgresql/data"
 }

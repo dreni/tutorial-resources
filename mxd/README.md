@@ -99,7 +99,7 @@ Naturally there are several ways to enable access to those services (Load balanc
 of simplicity we will use a plain Kubernetes port-forwarding:
 
 ```shell
-kubectl port-forward postgres-5b788f6bdd-bvt9b 5432:5423
+kubectl port-forward postgres-5b788f6bdd-bvt9b 5432:5432
 ``` 
 
 > Note that the actual pod name will be slightly different in your local cluster.

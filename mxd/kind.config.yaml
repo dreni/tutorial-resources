@@ -28,6 +28,10 @@ nodes:
         nodeRegistration:
           kubeletExtraArgs:
             node-labels: "ingress-ready=true"
+    # add extraMounts for hostPath /Users/Shared/k8s-pg-data
+    extraMounts:
+      - hostPath: /Users/Shared/k8s-pg-data
+        containerPath: /pg-data
     extraPortMappings:
       - containerPort: 80
         hostPort: 80
